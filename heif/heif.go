@@ -218,6 +218,29 @@ func (f *File) setMetaErr(err error) error {
 	return err
 }
 
+func tryReadMetaBox(reader *bmff.Reader) (bmff.Box, error) {
+
+	for {
+		box, err := reader.ReadBox()
+		if err != nil {
+			return nil, err
+		}
+
+		if box.Type() == bmff.TypeMeta {
+			pbox, err := box.Parse()
+			if err != nil {
+				return nil, err
+			}
+
+			return pbox, nil
+		}
+
+		if box.Type() != bmff.TypeMdat {
+			return nil, fmt.Errorf("Invalid box type: %q, expected %q", box.Type(), bmff.TypeMeta)
+		}
+	}
+}
+
 func (f *File) getMeta() (*BoxMeta, error) {
 	if f.metaErr != nil {
 		return nil, f.metaErr
@@ -237,10 +260,11 @@ func (f *File) getMeta() (*BoxMeta, error) {
 	}
 	meta.FileType = pbox.(*bmff.FileTypeBox)
 
-	pbox, err = bmr.ReadAndParseBox(bmff.TypeMeta)
+	pbox, err = tryReadMetaBox(bmr)
 	if err != nil {
 		return nil, f.setMetaErr(err)
 	}
+
 	metabox := pbox.(*bmff.MetaBox)
 
 	for _, box := range metabox.Children {

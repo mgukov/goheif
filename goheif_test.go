@@ -5,6 +5,7 @@ import (
 	"image"
 	"io"
 	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -56,5 +57,22 @@ func benchEncoding(b *testing.B, safe bool) {
 	for i := 0; i < b.N; i++ {
 		Decode(r)
 		r.Seek(0, io.SeekStart)
+	}
+}
+
+func TestConvert(t *testing.T) {
+
+	input := "in.heic"
+
+	fileInput, err := os.Open(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fileInput.Close()
+
+	// Extract exif to add back in after conversion
+	_, err = ExtractExif(fileInput)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

@@ -56,6 +56,7 @@ type BoxType [4]byte
 var (
 	TypeFtyp = BoxType{'f', 't', 'y', 'p'}
 	TypeMeta = BoxType{'m', 'e', 't', 'a'}
+	TypeMdat = BoxType{'m', 'd', 'a', 't'}
 )
 
 func (t BoxType) String() string { return string(t[:]) }
@@ -120,6 +121,7 @@ var parsers = map[BoxType]parserFunc{
 	boxType("idat"): parseItemDataBox,
 	boxType("iref"): parseItemReferenceBox,
 	boxType("hvcC"): parseItemHevcConfigBox,
+	boxType("mdat"): parseMdatBox,
 }
 
 type box struct {
@@ -301,6 +303,10 @@ func parseMetaBox(outer *box, br *bufReader) (Box, error) {
 	}
 	mb := &MetaBox{FullBox: fb}
 	return mb, br.parseAppendBoxes(&mb.Children)
+}
+
+func parseMdatBox(outer *box, br *bufReader) (Box, error) {
+	return nil, errors.New("Not implement yet")
 }
 
 func (br *bufReader) parseAppendBoxes(dst *[]Box) error {
